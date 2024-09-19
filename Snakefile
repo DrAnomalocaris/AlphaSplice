@@ -98,6 +98,7 @@ rule set_output_folders:
                 if record.id == f"chr{seqname}":
                     # Extract the desired region (start to end)
                     # Note: Python uses 0-based indexing, so subtract 1 from start if using 1-based coordinates
+                    
                     seq = record.seq
         records = []
         for transcript in general[wildcards.gene]["transcripts"]:
@@ -123,7 +124,8 @@ rule set_output_folders:
                 id=transcript,            # The sequence ID
                 description=""           # Optional description
                 )
-            records.append(record)
+            if len(protein_seq)>1:
+                records.append(record)
         with open(output.path, "w") as handle:
             SeqIO.write(records, handle, "fasta")
 
@@ -146,6 +148,7 @@ rule prepare_isoform_for_alphafold:
                     with open(output[0], "w") as fasta_out:
                         record.id = "isoform"
                         record.description = "isoform"
+
                         SeqIO.write(record , fasta_out, "fasta")
                     break
             else:
@@ -183,17 +186,23 @@ rule make_data_json:
 
 rule run_all_isoforms:
     input:
-        "data/Homo_sapiens.GRCh38.109.gtf.pkl"
+        fasta = "output/{gene}/isoforms.fa"
+
     output:
         "output/{gene}/done.txt",
 
     run:
         import pickle
         gene = wildcards.gene
-        with open(input[0], 'rb') as f: 
-            general, isoforms = pickle.load(f)
-        to_do=[]
-        for transcript in general[wildcards.gene]["transcripts"]:
+        transcripts=[]
+        with open(input.fasta, 'r') as f: 
+            for line in f:
+                if line.startswith(">"):
+                    
+                    transcript = line.split()[0][1:]
+                    transcripts.append(transcript)
+        to_do = []
+        for transcript in transcripts:
             to_do.append( f"output/{gene}/{transcript}/isoform.done.txt")
             to_do.append( f"output/{gene}/{transcript}/data.json")
         to_do = " ".join(sorted(to_do))
