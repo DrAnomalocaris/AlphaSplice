@@ -1,0 +1,1 @@
+{"seqname": "11", "strand": "-", "name": "INS", "gene_source": "ensembl_havana", "gene_version": "7", "gene_biotype": "protein_coding", "transcripts": ["ENST00000397262", "ENST00000381330", "ENST00000250971", "ENST00000421783", "ENST00000512523"], "transcript": "ENST00000512523", "coordinates": {"1": [2160785, 2160971], "2": [2159852, 2159961]}}
